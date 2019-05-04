@@ -9,3 +9,4 @@ class MeishiSpider(scrapy.Spider):
 
     def parse(self, response):
         pass
+        pass
