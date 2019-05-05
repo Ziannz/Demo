@@ -83,7 +83,9 @@ ITEM_PIPELINES = {
     # 'Meituan.pipelines.MyImagesPipeline':200,
     # 'Meituan.pipelines.MImagesPipeline':100,
     # 'Meituan.pipelines.Pipeline_ToTXT': 302,
-
+    'Meituan.pipelines.MeishiImagesPipeline':100,
+    'Meituan.pipelines.Meishi2ImagesPipeline':200,
+    'Meituan.pipelines.MeishiPipeline_ToTXT': 302,
 }
 
 MEDIA_ALLOW_REDIRECTS =True
@@ -125,7 +127,7 @@ DOWNLOAD_DELAY= round(random.random(),2)
 # # 日志文件
 # import time
 # # LOG_FILE = 'Meituan.log' # 最好为爬虫名称
-# LOG_FILE = 'spiders/meituan' + '_' + time.strftime("%Y%m%d%H%M", time.localtime()) + '.log'
+# LOG_FILE = 'spiders/meishi' + '_' + time.strftime("%Y%m%d%H%M", time.localtime()) + '.log'
 #
 # # 日志等级
 # LOG_LEVEL = 'INFO'

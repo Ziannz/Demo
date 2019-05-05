@@ -2,7 +2,7 @@ import requests
 import json,re
 import datetime,time
 
-url = 'https://ihotel.meituan.com/hbsearch/HotelSearch?utm_medium=pc&version_name=999.9&cateId=20&attr_28=129&uuid=9E5699C008293BA09214D3D1672F572663290AC624B5C7C0DD5716A3712B6C2A%401554436038066&cityId=953&offset=0&limit=50&startDay=20190415&endDay=20190415&q=&sort=defaults&areaId=14&X-FOR-WITH=py4LjkWjRGicIXFR3rh0Xu5HphZwfHdU7VlZnwFI3TnybDh2C2JB1ce0Y6xSHUF%2BSRtpf09%2FdP3qYA714fzgVDkAtwB3s5CzAsmtMA01E9n2Bc1qL0h%2FzticZ5BqbTAKJciwTKXm2wv9ztYdemU%2B5Q%3D%3D'
+# url = 'https://ihotel.meituan.com/hbsearch/HotelSearch?utm_medium=pc&version_name=999.9&cateId=20&attr_28=129&uuid=9E5699C008293BA09214D3D1672F572663290AC624B5C7C0DD5716A3712B6C2A%401554436038066&cityId=953&offset=0&limit=50&startDay=20190415&endDay=20190415&q=&sort=defaults&areaId=14&X-FOR-WITH=py4LjkWjRGicIXFR3rh0Xu5HphZwfHdU7VlZnwFI3TnybDh2C2JB1ce0Y6xSHUF%2BSRtpf09%2FdP3qYA714fzgVDkAtwB3s5CzAsmtMA01E9n2Bc1qL0h%2FzticZ5BqbTAKJciwTKXm2wv9ztYdemU%2B5Q%3D%3D'
 
 'iuuid=ADE79379F7354FB5992E6A40E169720D01736880CBA4980D684AB8C6F5714693'
 '9E5699C008293BA09214D3D1672F572663290AC624B5C7C0DD5716A3712B6C2A%401554436038066'
@@ -30,9 +30,12 @@ headers = {
 #     # "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36",
 # }
 #
-resp = requests.get(url,headers=headers)
-if resp.status_code == 200:
-    print(json.loads(resp.text))
+url = 'http://p0.meituan.net/deal/61ef68c28106569e68ade3ac95bfe9a6424136.jpg@600w_600h_1l'
+
+# resp = requests.get(url,headers=headers)
+# if resp.status_code == 200:
+#     with open('123.jpg','wb') as f:
+#         f.write(resp.content)
 
 
 # goods = json.loads(resp.text)['mergeList']['data']
@@ -195,4 +198,19 @@ originUrl: http://liangshan.meituan.com/meishi/b3955/
 riskLevel: 1
 optimusCode: 1
 _token: eJyNT11vqkAQ/S/7KpFdgZU18UFBe1GRD6XlctMHhOVDykdgUUrT/95tYl/6dJNJzpkzJ3NmPkBrxGCBICQQCuBGW7AAaAqnGAiAdXyiKBgjqKpYQkgA0S8NzwVwaZ91sPiHyAwKSCav34rLhYcCVfgq/HCZ85nM69tlcBPIGGsWoviWh1XaZWE1LWnOeo5RXYqcd1kuXiSiKCK/6H/Nsgh4QHnmARyLB4YPZD+9yZ/lW7s8rTiju3t89d6sQV85LhVP2rtKCj11dhpxWmXlWHfFGXYvBbI3aS+PG83V/2DPRravjZOCJMmYrR3/ii5NzrZOd49ZkBuJMslkvSe347xHeNsM+VBtrYNo7iJahMW4dkP7RO2xzrxwb8uegyVzEleNg7X+6MV1OhjSoe734dWKTwmiPjkb3XE2n/2tpSONaZBt7Fr3nzd7SSP+4UmaZ/BSlvcCw/wm+m2wlfDkuj6rVjdSE69YGkTB4enl1kFdqmHUuCFmZpIYa9NeLZfg8wvipaAA
+'''
+
+'''
+1.套餐内形式不一样，有的在内容后面的模块中写出套餐详情
+2.有部分在内容处出现套餐详情
+2.有部分只有套餐描述，没有物品
+3.部分没有套餐
+4.部分只有代金券
+
+
+解决：
+    1.套餐内容在 dealList - deals 中
+        1.
+    2.若没有套餐内容则检查有没有代金券 在 dealList - vouchers 中
+    3.若既没有套餐，也没有代金券则看是否添加菜品
 '''
