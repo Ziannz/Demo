@@ -1,0 +1,52 @@
+1.美团
+    1.列表页的店铺名字、地址、电话、经纬度
+    2.详情页的商品名称、可住人数、面积和标准价/普通价
+    ------------------------店铺页信息------------------------------
+
+    店铺名称 - name
+    店铺地址 - addr
+    店铺号码 - phone
+    经度 - lng
+    纬度 - lat
+    营业时间 - business //div[@class="poi-hotelinfo-content clearfix"]/div[4]/dd/span
+    -------------------------详情页信息-----------------------------
+    价格 - rprice
+    面积 - area
+    人数 - number
+
+    厨房设施 - 店铺而信息中的serviceDesc,若为空则不建立文档
+    服务 - 店铺而信息中的forward - serviceIcons
+
+    特色及其他 - goodsName(判断不含早是否在里边，增加breakfast)
+
+2.改需求 - 2019.4.9 15：51
+    图片只需要一张，内容确定固定值
+3.改需求 - 2019.4.10 8：24
+    面积只需要一个数字，可住人数去掉单位
+    餐饮做黑龙江，哈尔滨
+4.改需求 - 2019.4.10 10：08
+    窗户改为0/1值，去年卫浴
+5.改需求 - 2019.4.10 10：08
+    只要五个文件：面积，早餐，可住，窗户，json格式的详细信息
+6.2019.4.11 8:28
+    1.1124个，从列表从2开始
+    2.今天改项目以适应所有省份，所有城市
+        分析：
+            1.城市city_id、拼音接口：https://www.meituan.com/ptapi/getprovincecityinfo/
+                通过该接口找到item['city_id'] / item['city_py']
+                拼接"https://hotel.meituan.com/{}/".fromat(item['city_id'])转到该城市的酒店网页
+            2.匹配areaid及名字
+                areaid = //div[@class="search-row-wrap"]/div[2]/div[2]/div/a/@href
+                areaname = //div[@class="search-row-wrap"]/div[2]/div[2]/div/a/text()
+                构造接口 - 一共四个参数 city_id,time,time,areaid
+            3.其它就沿用原代码（不确定有没多的错误，需测试）
+    3.改异常
+        1.Item contains no images
+        2.PermissionError
+        3.7天连锁酒店(5块石图片没有后缀店报错)
+        4.只有一张图片，没有文档(很多)
+
+7.2019.4.12
+    1.新增爬取家乐
+    2.新增58同城的土地，地址为海南的海口，三亚
+
