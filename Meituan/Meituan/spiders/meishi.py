@@ -16,7 +16,7 @@ class MeishiSpider(scrapy.Spider):
         citys_list = json.loads(response.text)
         for citys in citys_list:
             item['provinceName'] = citys['provinceName'].strip()
-            if item['provinceName'] == '海南':
+            if item['provinceName'] == '四川':
                 for city in citys['cityInfoList']:
                     item['city_id'] = city['id']
                     item['city_name'] = city['name'].strip()
@@ -24,7 +24,7 @@ class MeishiSpider(scrapy.Spider):
                     item['acronym'] = city['acronym']
                     url = 'https://{}.meituan.com/meishi/'.format(item['acronym'])
 #                   if item['city_name'] in '成都自贡攀枝花泸州德阳':
-                    if item['city_name'] == '三亚':
+                    if item['city_name'] == '成都':
                         # print(url)
                         yield scrapy.Request(url, meta={'item': deepcopy(item)}, callback=self.get_district)
 
@@ -45,7 +45,7 @@ class MeishiSpider(scrapy.Spider):
                     item['areaId'] = dis['id']
                     url = dis['subAreas'][0]['url']
         #           此处过滤显示区域个数
-                    if item['dis_name'] == '海棠区':
+                    if item['dis_name'] == '武侯区':
                         yield scrapy.Request(url,meta={'item':deepcopy(item)},callback=self.get_article)
             except KeyError:
                 print('取值区域错误，查看get_district函数')
