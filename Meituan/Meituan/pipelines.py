@@ -282,10 +282,10 @@ class MeishiImagesPipeline(ImagesPipeline):
     def item_completed(self, results, item, info):
         image_paths = [x['path'] for ok, x in results if ok]
         if not image_paths:
-            if item['image_urls']:
-                print('下载图片错误',item['image_urls'])
+            if item['food_urls']:
+                print('food_urls下载图片错误',item['food_urls'],item['url'])
             else:
-                print('没有图片',item['artile_url'])
+                print('该商品没有套餐信息',item['url'])
 
         return deepcopy(item)
 
@@ -298,10 +298,6 @@ class Meishi2ImagesPipeline(ImagesPipeline):
             for image_url in item['image_urls']:
                 yield Request(image_url, meta={'item': deepcopy(item),'status':'0'},dont_filter=True)
 
-            # if item['food_urls']:
-            #     for food_url in item['food_urls']:
-            #         yield Request(food_url, meta={'item': deepcopy(item),'status':'1'},dont_filter=True)
-
         except ValueError as e:
             print('下载图片失败，请查看pipeline')
 
@@ -310,15 +306,9 @@ class Meishi2ImagesPipeline(ImagesPipeline):
     def file_path(self, request, response=None, info=None):
         item = request.meta['item']
         status = request.meta['status']
-        if status == '0':
-            folder = item['provinceName'] + '/' + item['city_name'] + '/' + item['dis_name'] + '/' + item['title']
-            folder_strip = folder.strip()
-            # print(status)
-
-        else:
-            folder = item['provinceName'] + '/' + item['city_name'] + '/' + item['dis_name'] + '/' + item['title'] + '/' + item['gname']
-            folder_strip = folder.strip()
-            # print(status)
+        folder = item['provinceName'] + '/' + item['city_name'] + '/' + item['dis_name'] + '/' + item['title']
+        folder_strip = folder.strip()
+        # print(status)
 
         image_guid = str(int(time.time() * 1000000)) + '.jpg'
         self.filename = u'Meishi/{0}/{1}'.format(folder_strip, image_guid)
@@ -331,7 +321,7 @@ class Meishi2ImagesPipeline(ImagesPipeline):
             if item['image_urls']:
                 print('下载图片错误',item['image_urls'])
             else:
-                print('没有图片',item['artile_url'])
+                print('该商品没有图片',item['url'])
 
         return deepcopy(item)
 
@@ -341,36 +331,37 @@ class MeishiPipeline_ToTXT(object):
     def process_item(self, item, spider):
         # csv文件的位置,无需事先创建
         # print(json)
-        # filename = 'E:/Xiecheng' + '/' + PRIVICE + '/' + item['city'] + '/' + item['title']
-        filename = 'E:/Meishi' + '/' + item['provinceName'] + '/' + item['city_name'] + '/' + item['dis_name'] + '/' + item['title']+ '/' + item['gname']
-        if(os.path.exists(filename)):
-            name = filename + '/' + 'infos.txt'
-            msg = {'name':item['gname'],'price':item['gprice'],'info':item['info']}
-            try:
-                with open(name,'w',encoding='utf-8') as f:
-                    f.write(json.dumps(msg,ensure_ascii=False))
-            except FileNotFoundError:
-                print('没有找到文件路径，请检查',item)
-                return None
-            print(item['title'],'存储结束')
 
-        fname = 'E:/Meishi' + '/' + item['provinceName'] + '/' + item['city_name'] + '/' + item['dis_name'] + '/' + item['title']
-        if(os.path.exists(fname)):
+        fname = 'E:/Meishi' + '/' + item['provinceName'] + '/' + item['city_name'] + '/' + item['dis_name'] + '/' + \
+                item['title']
+        if (os.path.exists(fname)):
             fname = fname + '/' + 'infos.txt'
-            fmsg = {'title':item['title'],
-                   'address':item['address'],
-                   'phone':item['phone'],
-                   'openTime':item['openTime'],
-                   'lng':item['lng'],
-                   'lat': item['lat'],
-                   }
+            fmsg = {'title': item['title'],
+                    'address': item['address'],
+                    'phone': item['phone'],
+                    'openTime': item['openTime'],
+                    'lng': item['lng'],
+                    'lat': item['lat'],
+                    }
             try:
-                with open(fname,'w',encoding='utf-8') as f:
-                    f.write(json.dumps(fmsg,ensure_ascii=False))
+                with open(fname, 'w', encoding='utf-8') as f:
+                    f.write(json.dumps(fmsg, ensure_ascii=False))
             except FileNotFoundError:
-                print('没有找到文件路径，请检查',item)
+                print('没有找到文件路径，请检查', item)
                 return None
-            print(item['title'],'存储结束')
 
+        if 'gname' in item:
+            # filename = 'E:/Xiecheng' + '/' + PRIVICE + '/' + item['city'] + '/' + item['title']
+            filename = 'E:/Meishi' + '/' + item['provinceName'] + '/' + item['city_name'] + '/' + item['dis_name'] + '/' + item['title']+ '/' + item['gname']
+            if(os.path.exists(filename)):
+                name = filename + '/' + 'infos.txt'
+                msg = {'name':item['gname'],'price':item['gprice'],'info':item['info']}
+                try:
+                    with open(name,'w',encoding='utf-8') as f:
+                        f.write(json.dumps(msg,ensure_ascii=False))
+                except FileNotFoundError:
+                    print('没有找到文件路径，请检查',item)
+                    return None
+                print(item['title'],'存储结束')
 
         return deepcopy(item)
