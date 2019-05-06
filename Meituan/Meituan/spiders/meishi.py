@@ -24,7 +24,7 @@ class MeishiSpider(scrapy.Spider):
                     item['acronym'] = city['acronym']
                     url = 'https://{}.meituan.com/meishi/'.format(item['acronym'])
 #                   if item['city_name'] in '成都自贡攀枝花泸州德阳':
-                    if item['city_name'] == '海口':
+                    if item['city_name'] == '三亚':
                         # print(url)
                         yield scrapy.Request(url, meta={'item': deepcopy(item)}, callback=self.get_district)
 
@@ -45,7 +45,7 @@ class MeishiSpider(scrapy.Spider):
                     item['areaId'] = dis['id']
                     url = dis['subAreas'][0]['url']
         #           此处过滤显示区域个数
-                    if item['dis_name'] == '龙华区':
+                    if item['dis_name'] == '海棠区':
                         yield scrapy.Request(url,meta={'item':deepcopy(item)},callback=self.get_article)
             except KeyError:
                 print('取值区域错误，查看get_district函数')
@@ -81,7 +81,19 @@ class MeishiSpider(scrapy.Spider):
                 for detail in detail_list:
                     id = detail['poiId']
                     url = 'http://www.meituan.com/meishi/{}/'.format(id)
-                    yield scrapy.Request(url,meta={'item':deepcopy(item)},callback=self.get_detail)
+                    headers = {
+                        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+                        "Accept-Encoding": "gzip, deflate",
+                        "Accept-Language": "zh-CN,zh;q=0.9",
+                        "Cache-Control": "max-age=0",
+                        "Connection": "keep-alive",
+                        "Cookie": "_lxsdk_cuid=16a1f0e9cc5c8-01b64bc00575ea-e323069-1fa400-16a1f0e9cc5c8; __mta=251508409.1555299213429.1555299213429.1555299213429.1; _hc.v=a999101b-d78a-4176-b190-3d0229af8b19.1555299225; iuuid=ADE79379F7354FB5992E6A40E169720D01736880CBA4980D684AB8C6F5714693; _lxsdk=ADE79379F7354FB5992E6A40E169720D01736880CBA4980D684AB8C6F5714693; lsu=; _lx_utm=utm_source%3DBaidu%26utm_medium%3Dorganic; client-id=a205b22e-8ade-4410-b2ed-13d7179e0667; mtcdn=K; uuid=a3d58f800cf2490ab87d.1557017027.4.0.0; ci=94; rvct=94%2C321%2C59%2C313%2C107%2C323%2C1268%2C1128%2C1114%2C981%2C871; IJSESSIONID=13sb3c7ohnw5112na4a0o1xsbg; cityname=%E6%B5%B7%E5%8F%A3; lat=19.992046; lng=110.314352; _lxsdk_s=16a8aa88b77-786-aa-a5f%7C%7C232",
+                        "Host": "www.meituan.com",
+                        "Referer": "http://haikou.meituan.com/meishi/b5312/",
+                        "Upgrade-Insecure-Requests": "1",
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.108 Safari/537.36",
+                    }
+                    yield scrapy.Request(url,headers=headers,meta={'item':deepcopy(item)},callback=self.get_detail,dont_filter=True)
 
             except KeyError:
                 print('取值店铺错误，查看get_article函数')
@@ -94,7 +106,7 @@ class MeishiSpider(scrapy.Spider):
             else:
                 page = int(page) + 1
                 url = re.sub('pn.*?/','pn{}/'.format(page),response.url)
-            if page == 3:
+            if page == 4:
                 return None
             # print(url)
             yield scrapy.Request(url,meta={'item':deepcopy(item)},callback=self.get_article)
