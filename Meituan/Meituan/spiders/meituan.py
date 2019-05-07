@@ -8,7 +8,7 @@ import datetime
 import json
 import re
 from copy import deepcopy
-from scrapy_redis.spiders import RedisSpider
+# from scrapy_redis.spiders import RedisSpider
 
 
 class MeituanSpider(scrapy.Spider):
