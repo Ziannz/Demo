@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
+import base64
+import datetime
+import random
 import re
 import math
+import time
+import zlib
+from urllib.parse import urljoin
+
 import scrapy
 import json
 from copy import deepcopy
@@ -24,7 +31,7 @@ class MeishiSpider(scrapy.Spider):
                     item['acronym'] = city['acronym']
                     url = 'https://{}.meituan.com/meishi/'.format(item['acronym'])
 #                   if item['city_name'] in '成都自贡攀枝花泸州德阳':
-                    if item['city_name'] == '成都':
+                    if item['city_name'] == '凉山':
                         # print(url)
                         yield scrapy.Request(url, meta={'item': deepcopy(item)}, callback=self.get_district)
 
@@ -39,14 +46,38 @@ class MeishiSpider(scrapy.Spider):
         state = re.findall(r'.*?window._appState = (.*?);</script>.*?',data)[0]
         if state:
             try:
-                dis_list = json.loads(state)['filters']['areas']
+                uuid = json.loads(state)['$meta']['uuid']
+                filters = json.loads(state)['filters']
+                dis_list = filters['areas']
                 for dis in dis_list:
                     item['dis_name'] =dis['name'].strip()
                     item['areaId'] = dis['id']
-                    url = dis['subAreas'][0]['url']
-        #           此处过滤显示区域个数
-                    if item['dis_name'] == '武侯区':
-                        yield scrapy.Request(url,meta={'item':deepcopy(item)},callback=self.get_article)
+                    for cate in filters['cates']:
+                        if cate['name'] in '日韩料理西餐东北菜川湘菜江浙菜粤菜西北菜京菜鲁菜云贵菜东南亚菜台湾/客家菜蒙餐新疆菜其他美食':
+                            item['cateId'] = cate['id']
+                            item['catename'] = cate['name']
+                            # 获取 token
+                            base_url = 'http://liangshan.meituan.com/meishi/api/poi/getPoiList?'
+                            data = {
+                                'cityName':item['city_name'],
+                                'cateId':item['cateId'],
+                                'areaId':item['areaId'],
+                                'sort':'',
+                                'dinnerCountAttrId': '',
+                                'page':'1',
+                                'userId':'',
+                                'uuid':uuid,
+                                'platform': '1',
+                                'partner': '126',
+                                'originUrl': response.url,
+                                'riskLevel': '1',
+                                'optimusCode': '1',
+                            }
+                            # poiId = self.get_token(data)
+                            # url = urljoin(base_url,data)
+                            print(data)
+
+
             except KeyError:
                 print('取值区域错误，查看get_district函数')
         else:
@@ -58,58 +89,30 @@ class MeishiSpider(scrapy.Spider):
         所有数据均在原网页中以json格式出现
         匹配每个店铺的 poiId 拼接店铺链接 http://www.meituan.com/meishi/177925227/
         '''
-        item = response.meta['item']
-        data = response.text
-        # 数据在网页中是以json格式出现的
-        state = re.findall(r'.*?window._appState = (.*?);</script>.*?', data)[0]
-        j_state = json.loads(state)
+        # item = response.meta['item']
         # 判定页数
-        totalCounts = j_state['poiLists']['totalCounts']
-        total_page = math.ceil(totalCounts / 15)
+        # totalCounts = j_state['poiLists']['totalCounts']
+        # total_page = math.ceil(totalCounts / 15)
 
-        page = re.findall(r'.*?pn(.*?)/', response.url)
-        if page:
-            page = page[0]
-        else:
-            page = '1'
-        print('正在爬取 %s 第 %s 页，共 %s 页' % (item['dis_name'], page, total_page))
-
-        if state:
-            try:
-                detail_list = j_state['poiLists']['poiInfos']
-                #               此处过滤显示店铺个数,单页15个
-                for detail in detail_list:
-                    id = detail['poiId']
-                    url = 'http://www.meituan.com/meishi/{}/'.format(id)
-                    headers = {
-                        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
-                        "Accept-Encoding": "gzip, deflate",
-                        "Accept-Language": "zh-CN,zh;q=0.9",
-                        "Cache-Control": "max-age=0",
-                        "Connection": "keep-alive",
-                        "Cookie": "_lxsdk_cuid=16a1f0e9cc5c8-01b64bc00575ea-e323069-1fa400-16a1f0e9cc5c8; __mta=251508409.1555299213429.1555299213429.1555299213429.1; _hc.v=a999101b-d78a-4176-b190-3d0229af8b19.1555299225; iuuid=ADE79379F7354FB5992E6A40E169720D01736880CBA4980D684AB8C6F5714693; _lxsdk=ADE79379F7354FB5992E6A40E169720D01736880CBA4980D684AB8C6F5714693; lsu=; _lx_utm=utm_source%3DBaidu%26utm_medium%3Dorganic; client-id=a205b22e-8ade-4410-b2ed-13d7179e0667; mtcdn=K; uuid=a3d58f800cf2490ab87d.1557017027.4.0.0; ci=94; rvct=94%2C321%2C59%2C313%2C107%2C323%2C1268%2C1128%2C1114%2C981%2C871; IJSESSIONID=13sb3c7ohnw5112na4a0o1xsbg; cityname=%E6%B5%B7%E5%8F%A3; lat=19.992046; lng=110.314352; _lxsdk_s=16a8aa88b77-786-aa-a5f%7C%7C232",
-                        "Host": "www.meituan.com",
-                        "Referer": "http://haikou.meituan.com/meishi/b5312/",
-                        "Upgrade-Insecure-Requests": "1",
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.108 Safari/537.36",
-                    }
-                    yield scrapy.Request(url,headers=headers,meta={'item':deepcopy(item)},callback=self.get_detail,dont_filter=True)
-
-            except KeyError:
-                print('取值店铺错误，查看get_article函数')
-        else:
-            print('正则匹配店铺错误，查看get_article函数')
-
-
-        if int(page) < int(total_page):
-            if page == '1':url = response.url + 'pn2/'
-            else:
-                page = int(page) + 1
-                url = re.sub('pn.*?/','pn{}/'.format(page),response.url)
-            if page == 4:
-                return None
-            # print(url)
-            yield scrapy.Request(url,meta={'item':deepcopy(item)},callback=self.get_article)
+        # page = re.findall(r'.*?pn(.*?)/', response.url)
+        # if page:page = page[0]
+        # else:page = '1'
+        # print('正在爬取 %s 第 %s 页，共 %s 页' % (item['dis_name'], page, total_page))
+        #
+        #
+        #
+        #
+        #
+        #
+        # if int(page) < int(total_page):
+        #     if page == '1':url = response.url + 'pn2/'
+        #     else:
+        #         page = int(page) + 1
+        #         url = re.sub('pn.*?/','pn{}/'.format(page),response.url)
+        #     if page == 4:
+        #         return None
+        #     # print(url)
+        #     yield scrapy.Request(url,meta={'item':deepcopy(item)},callback=self.get_article)
 
 
 
@@ -118,6 +121,10 @@ class MeishiSpider(scrapy.Spider):
         获取每个店铺的详细信息
         所有数据均在原网页中以json格式出现
         '''
+        if '验证中心' in response.text:
+            print('出现验证码！')
+            return None
+
         item = response.meta['item']
         item['url'] = response.url
         data = response.text
@@ -126,7 +133,7 @@ class MeishiSpider(scrapy.Spider):
         if state:
             state = state[0]
         else:
-            print('detail网页匹配出现问题117')
+            print('网页数据为:',response.url)
             return None
         j_state = json.loads(state)
         try:
@@ -201,3 +208,40 @@ class MeishiSpider(scrapy.Spider):
         # item['info'] = menu
 
         yield deepcopy(item)
+
+
+    def get_token(self,poiId):
+
+        times = datetime.date.today()
+        today = times.strftime('%Y-%m-%d')
+        tomorrow = datetime.date.fromordinal(times.toordinal() + 1).strftime('%Y-%m-%d')
+        url = 'https://hotel.meituan.com/{0}/?ci={1}&co={2}'.format(poiId, today, tomorrow)
+        today = datetime.date.today()
+        start = int(time.mktime(time.strptime(str(today), '%Y-%m-%d'))) * 1000
+        tomorrow = today + datetime.timedelta(days=1)
+        end = int(time.mktime(time.strptime(str(tomorrow), '%Y-%m-%d'))) * 1000
+
+        string = 'end={}&poiId={}&start={}&type=1&utm_medium=PC&uuid=9E5699C008293BA09214D3D1672F572663290AC624B5C7C0DD5716A3712B6C2A&version_name=7.3.0'.format(end, start, poiId)
+        gz = zlib.compress(string.encode())
+        base_string = base64.encodestring(gz).decode()
+        # print(base_string)
+        ts = int(time.time() * 1000)
+        token_dict = {
+            "rId": 100900,
+            "ts": ts,
+            "cts": ts + 1000000,
+            "brVD": [1920, 290],
+            "brR": [[1920, 1080], [1920, 1040], 24, 24],
+            "bI": [url, ''],
+            "mT": [],
+            "kT": [],
+            "aT": [],
+            "tT": [],
+            "sign": base_string,
+        }
+        json_string = json.dumps(token_dict)
+        token_string = zlib.compress(json_string.encode())
+        token_base = base64.encodebytes(token_string).decode()
+        # print(token_base)
+        # encodebytes有默认的换行符和空格 replace('\r', '').replace('\n', '').replace('\t', '') 去掉
+        return token_base.replace('\r', '').replace('\n', '').replace('\t', '')
